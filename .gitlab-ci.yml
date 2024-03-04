@@ -1,0 +1,156 @@
+# Template name: Java Maven Cloud Native blueprint; Version: 5.0.0
+# Links for reference: https://confluence.dell.com/display/DD/General+Info+-+5.0.0
+# Change the variables value as per your project requirement
+# Disclaimer: 
+# **** DevOps team recommends you to use this template to setup CICD pipelien for "Java Maven applications". Deviations to this template, should expect delay in response from support team.***#
+
+
+#Variables
+variables:
+  BROWN_APP_NAME: $BROWN_APP_NAME
+  TEMP_APP_NAME: $TEMP_APP_NAME
+  APP_NAME_PERF: $APP_NAME_PERF
+  TARGET: 'target'
+
+#Include common cicd java jobs
+include: 
+  - project: globalops/BPM/global-inventory/prism-inventory/common/inventory-devops-library
+    ref: $INVENTORY_BLUEPRINT_VERSION
+    file: inventory-cicd-jobs.yml
+
+compile-build:
+  extends: .compile-build-service-inventory
+
+xray-scan:
+  extends: .xray-scan-service-inventory
+ 
+blackduck-scan:
+  extends: .blackduck-scan-service-inventory
+ 
+code-quality :
+  extends : .code-quality-service-inventory
+
+unit-test:
+  extends: .unit-test-service-inventory
+
+# Checkmarx scan
+checkmarx:
+  extends: .checkmarx-service-inventory
+    
+integration-test:
+  extends: .integration-test-service-inventory
+
+integration-test-main:
+  extends: .integration-test-main-service-inventory
+  
+deploy-dev: 
+  extends: .deploy-dev-service-inventory
+  variables:
+    PCF_MF_FILE: $PCF_DEV_MF_FILE
+    APP_NAME: $APP_NAME_DEV
+    
+deploy-ge1: 
+  extends: .deploy-ge1-service-inventory
+  variables:
+    PCF_MF_FILE: $PCF_GE1_MF_FILE
+    APP_NAME: $APP_NAME_GE1
+  when: manual
+
+deploy-ge2:
+  extends: .deploy-ge2-service-inventory
+  variables:
+    PCF_MF_FILE: $PCF_GE2_MF_FILE
+    APP_NAME: $APP_NAME_GE2
+  when: manual
+
+deploy-ge3:
+  extends: .deploy-ge3-service-inventory
+  variables:
+    PCF_MF_FILE: $PCF_GE3_MF_FILE
+    APP_NAME: $APP_NAME_GE3
+  when: manual
+
+deploy-ge4: 
+  extends: .deploy-ge4-service-inventory
+  variables:
+    PCF_MF_FILE: $PCF_GE4_MF_FILE
+    APP_NAME: $APP_NAME_GE4
+  when: manual
+    
+deploy-perf: 
+  extends: .deploy-perf-service-inventory
+  variables:
+    PCF_MF_FILE: $PCF_PERF_MF_FILE
+    APP_NAME: $APP_NAME_PERF
+  when: manual
+
+    
+publish-package:
+  extends: .publish-package-service-inventory
+
+retrieve-artifact:
+  extends: .retrieve-artifact-service-invetory
+
+deploy-prod-primary:
+  extends: .deploy-prod-primary-service-inventory
+  variables:
+    MF_FILE: $PCF_PROD_MF_FILE
+
+deploy-prod-secondary:
+  extends: .deploy-prod-secondary-service-inventory
+  variables:
+    MF_FILE: $PCF_DR_MF_FILE
+  when: manual
+  # only:
+  #   - tags
+
+switch-route-primary:
+  extends: .switch-route-primary-service-inventory
+  when: manual
+  variables:
+    MF_FILE: $PCF_PROD_MF_FILE  
+  # only:
+  #   - tags
+
+switch-route-secondary:
+  extends: .switch-route-secondary-service-inventory
+  when: manual
+  variables:
+    MF_FILE: $PCF_DR_MF_FILE  
+  # only:
+  #   - tags
+
+rollback-primary:
+  extends: .rollback-primary-service-inventory
+  variables:
+    MF_FILE: $PCF_PROD_MF_FILE
+  when: manual    
+#   expect:
+#     - tags
+#     - main
+#     - branches
+
+rollback-secondary:
+  extends: .rollback-secondary-service-inventory
+  variables:
+    MF_FILE: $PCF_DR_MF_FILE  
+#   expect:
+#     - tags
+#     - main
+#     - branches
+  when: manual
+  
+#Check RFC Open
+check-rfc-open:
+  stage: rfc-submit
+  extends: .inventory-check-rfc-open
+
+#Check RFC Deploy
+check-rfc-deploy:
+  stage: rfc-approve
+  extends: .inventory-check-rfc-deploy
+
+#Check RFC Validate
+check-rfc-validate:
+  stage: rfc-update
+  extends: .inventory-check-rfc-validate
