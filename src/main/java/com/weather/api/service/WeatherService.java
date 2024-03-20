@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WeatherService {
 
-	@Cacheable("weatherForecast")
+	@Cacheable(value = "weatherForecast", key = "#zipCode")
 	public WeatherForecastDto getWeatherForZipCode(String zipCode) {
 
 		WeatherForecastDto weatherFCDto = null;
@@ -65,17 +65,14 @@ public class WeatherService {
 			JSONArray valuesArr = location.getJSONArray("values");
 			JSONObject valouObject = valuesArr.getJSONObject(0);
 
-			weatherDto = new WeatherForecastDto();
-			weatherDto.setLocation(location.getString("address"));
-			weatherDto.setTimestamp(cc.getString("datetime"));
-			weatherDto.setCurrentTemp(cc.getDouble("temp"));
-			weatherDto.setMaxTemp(valouObject.getDouble("maxt"));
-			weatherDto.setMinTemp(valouObject.getDouble("mint"));
-			weatherDto.setWindSpeed_mps(Math.round(cc.getDouble("wspd") / 3.6));
-			weatherDto.setRel_humidity((int) cc.getDouble("humidity"));
-			weatherDto.setWeather_description(valouObject.getString("conditions"));
-			weatherDto.setTimeZone(weatherAPIDto.getLocation().getTz_id());
-			weatherDto.setWind_direction(weatherAPIDto.getCurrent().getWind_dir());
+			weatherDto = WeatherForecastDto.builder().location(location.getString("address"))
+					.timestamp(cc.getString("datetime")).currentTemp(cc.getDouble("temp"))
+					.maxTemp(valouObject.getDouble("maxt")).minTemp(valouObject.getDouble("mint"))
+					.windSpeed_mps(Math.round(cc.getDouble("wspd") / 3.6)).rel_humidity((int) cc.getDouble("humidity"))
+					.weather_description(valouObject.getString("conditions"))
+					.timeZone(weatherAPIDto.getLocation().getTz_id())
+					.wind_direction(weatherAPIDto.getCurrent().getWind_dir()).build();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
